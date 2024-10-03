@@ -36,6 +36,7 @@ class BahaAdapter(BaseAdapterInterface):
     def __init__(self, cookies: Cookies = None):
         self.set_cookies(cookies)
         self.client = AsyncClient(headers=headers, cookies=cookies)
+        self.device_id = None # 缓存设备ID
 
     def set_cookies(self, cookies: Cookies) -> None:
         self.cookies = cookies
@@ -96,10 +97,14 @@ class BahaAdapter(BaseAdapterInterface):
 
     async def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
         """解析剧集流，返回视频、音频、字幕流"""
-        self.device_id = (await self.client.get('https://ani.gamer.com.tw/ajax/getdeviceid.php')).json()['deviceid']
+        self.device_id = (await self.client.get('https://ani.gamer.com.tw/ajax/getdeviceid.php')).json()['deviceid'] if self.device_id is None else self.device_id
         url = BahaAPI.master_m3u8.format(sn=episode.episode_id, device_id=self.device_id)
         response = await self.client.get(url)
         data = response.json()
+        if 'src' not in data:
+            print(data)
+            self.device_id = None
+            return await self.parse_stream(episode)
         m3u8_url = data['src']
         base_url = m3u8_url.split('playlist_advance.m3u8')[0]
         response = await self.client.get(m3u8_url)
