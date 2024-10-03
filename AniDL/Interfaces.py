@@ -11,7 +11,7 @@ class BaseAdapterInterface(ABC):
         """配置类"""
         adapter_name: str
         base_play_url: List[str]
-        allow_login: bool # 是否实现登录功能
+        custom_login: bool = False # 是否需要自定义登录
 
     @abstractmethod
     def __init__(self, cookies: Optional[Cookies] = None):
