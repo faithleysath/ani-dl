@@ -1,5 +1,5 @@
-from Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia, UrlType, DRMType
-from Interfaces import BaseAdapterInterface, SeasonNotExistsError
+from AniDL.Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia, UrlType, DRMType
+from AniDL.Interfaces import BaseAdapterInterface, SeasonNotExistsError
 from typing import List, Dict, Any, Optional, Tuple
 from httpx import Cookies, Client
 from datetime import datetime

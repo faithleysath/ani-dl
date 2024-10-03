@@ -1,7 +1,7 @@
-from baha import BahaAdapter
-from Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia
+from AniDL.adapters.baha import BahaAdapter
+from AniDL.Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia
 from typing import List, Dict, Any, Optional, Tuple
-from Interfaces import BaseAdapterInterface
+from AniDL.Interfaces import BaseAdapterInterface
 from datetime import datetime
 from httpx import Cookies
 

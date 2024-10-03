@@ -1,4 +1,4 @@
-from Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia
+from AniDL.Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia
 from typing import List, Dict, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 from datetime import datetime
