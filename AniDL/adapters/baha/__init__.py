@@ -6,27 +6,28 @@ from datetime import datetime
 import m3u8
 import re
 
+headers = {
+'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0",
+'Accept-Encoding': "gzip, deflate",
+'sec-ch-ua': "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Microsoft Edge\";v=\"128\"",
+'dnt': "1",
+'sec-ch-ua-mobile': "?0",
+'sec-ch-ua-platform': "\"Windows\"",
+'sec-fetch-site': "same-origin",
+'sec-fetch-mode': "cors",
+'sec-fetch-dest': "empty",
+'referer': "https://ani.gamer.com.tw/animeVideo.php?sn=18427",
+'accept-language': "en-GB,en;q=0.9,en-US;q=0.8,zh-CN;q=0.7,zh;q=0.6",
+'priority': "u=1, i",
+'Origin': 'https://ani.gamer.com.tw'
+}
+
 class BahaAPI:
     season_episode_info = "https://api.gamer.com.tw/anime/v1/video.php?videoSn={sn}"
     master_m3u8 = "https://ani.gamer.com.tw/ajax/m3u8.php?sn={sn}&device={device_id}"
 
 class BahaAdapter(BaseAdapterInterface):
     """巴哈姆特动画疯适配器"""
-    headers = {
-    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0",
-    'Accept-Encoding': "gzip, deflate",
-    'sec-ch-ua': "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Microsoft Edge\";v=\"128\"",
-    'dnt': "1",
-    'sec-ch-ua-mobile': "?0",
-    'sec-ch-ua-platform': "\"Windows\"",
-    'sec-fetch-site': "same-origin",
-    'sec-fetch-mode': "cors",
-    'sec-fetch-dest': "empty",
-    'referer': "https://ani.gamer.com.tw/animeVideo.php?sn=18427",
-    'accept-language': "en-GB,en;q=0.9,en-US;q=0.8,zh-CN;q=0.7,zh;q=0.6",
-    'priority': "u=1, i",
-    'Origin': 'https://ani.gamer.com.tw'
-    }
     class Config:
         adapter_name = "baha"
         base_play_url = ["https://ani.gamer.com.tw/animeRef.php?sn=", "https://ani.gamer.com.tw/animeVideo.php?sn="]
@@ -34,7 +35,7 @@ class BahaAdapter(BaseAdapterInterface):
 
     def __init__(self, cookies: Cookies = None):
         self.set_cookies(cookies)
-        self.client = Client(headers=self.headers, cookies=cookies)
+        self.client = Client(headers=headers, cookies=cookies)
         self.device_id = self.client.get('https://ani.gamer.com.tw/ajax/getdeviceid.php').json()['deviceid']
 
     def set_cookies(self, cookies: Cookies) -> None:
