@@ -40,19 +40,17 @@ class Adapter(BaseAdapterInterface):
     def set_cookies(self, cookies: Cookies) -> None:
         self.adapter.set_cookies(cookies)
 
-    def login(self, username: str, password: str, set_cookies: bool = True) -> Cookies:
-        return self.adapter.login(username, password, set_cookies)
+    async def login(self, username: str, password: str, set_cookies: bool = True) -> Cookies:
+        return await self.adapter.login(username, password, set_cookies)
     
-    @property
-    def username(self) -> str | None:
-        return self.adapter.username
+    async def username(self) -> str | None:
+        return await self.adapter.username()
     
-    @property
-    def subscription_due_date(self) -> datetime | None:
-        return self.adapter.subscription_due_date
+    async def subscription_due_date(self) -> datetime | None:
+        return await self.adapter.subscription_due_date()
     
-    def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
-        return self.adapter.parse_playurl(playurl)
+    async def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
+        return await self.adapter.parse_playurl(playurl)
     
-    def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
-        return self.adapter.parse_stream(episode)
+    async def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
+        return await self.adapter.parse_stream(episode)

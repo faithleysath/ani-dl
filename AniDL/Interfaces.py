@@ -30,28 +30,26 @@ class BaseAdapterInterface(ABC):
         pass
 
     @abstractmethod
-    def login(self, username: str, password: str, set_cookies: Optional[bool] = True) -> Cookies:
+    async def login(self, username: str, password: str, set_cookies: Optional[bool] = True) -> Cookies:
         """登录返回 cookies"""
         pass
 
-    @property
     @abstractmethod
-    def username(self) -> str | None:
+    async def username(self) -> str | None:
         """返回用户名，也可以用来检查是否登录"""
         pass
 
-    @property
     @abstractmethod
-    def subscription_due_date(self) -> datetime | None:
+    async def subscription_due_date(self) -> datetime | None:
         """返回订阅到期时间，也可以用来检查是否订阅"""
         pass
 
     @abstractmethod
-    def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
+    async def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
         """解析播放链接，返回剧集信息"""
         pass
 
     @abstractmethod
-    def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
+    async def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
         """解析剧集流，返回视频、音频、字幕流"""
         pass

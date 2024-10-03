@@ -190,11 +190,21 @@ class DRMType(str, Enum):
     AES128 = "aes-128"
     HLS = "hls"
 
+class FileType(str, Enum):
+    """描述文件类型"""
+    TS = "ts"
+    M4S = "m4s"
+    M3U8 = "m3u8"
+    MPD = "mpd"
+    ASS = "ass"
+    SRT = "srt"
+
 class Media(IndexBaseModel):
     """描述媒体资源信息"""
     episode_id: int
     url: str
     url_type: UrlType
+    file_type: FileType
     headers: Optional[Dict[str, str]] = None # 自定义请求头
     size: Optional[int] = None # 文件大小，单位：字节
     length: Optional[int] = None # 媒体时长，单位：毫秒

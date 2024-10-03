@@ -1,7 +1,7 @@
-from AniDL.Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia, UrlType, DRMType
+from AniDL.Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia, UrlType, DRMType, FileType
 from AniDL.Interfaces import BaseAdapterInterface, SeasonNotExistsError
 from typing import List, Dict, Any, Optional, Tuple
-from httpx import Cookies, Client
+from httpx import Cookies, AsyncClient
 from datetime import datetime
 import m3u8
 import re
@@ -35,20 +35,18 @@ class BahaAdapter(BaseAdapterInterface):
 
     def __init__(self, cookies: Cookies = None):
         self.set_cookies(cookies)
-        self.client = Client(headers=headers, cookies=cookies)
-        self.device_id = self.client.get('https://ani.gamer.com.tw/ajax/getdeviceid.php').json()['deviceid']
+        self.client = AsyncClient(headers=headers, cookies=cookies)
 
     def set_cookies(self, cookies: Cookies) -> None:
         self.cookies = cookies
 
-    def login(self, username: str, password: str, set_cookies: bool = True) -> Cookies:
+    async def login(self, username: str, password: str, set_cookies: bool = True) -> Cookies:
         pass
 
-    @property
-    def username(self) -> str | None:
+    async def username(self) -> str | None:
         if not self.cookies:
             return None
-        response = self.client.get('https://home.gamer.com.tw/profile/index.php', follow_redirects=False)
+        response = await self.client.get('https://home.gamer.com.tw/profile/index.php', follow_redirects=False)
         # 该请求一定是302重定向，获得重定向地址
         redirect_url = response.headers['Location']
         # 如果登录成功，则定向到https://home.gamer.com.tw/profile/index.php?owner={username}，否则为https://home.gamer.com.tw
@@ -58,25 +56,24 @@ class BahaAdapter(BaseAdapterInterface):
             username = redirect_url.split('=')[-1]
             return username
         
-    @property
-    def subscription_due_date(self) -> datetime | None:
-        response = self.client.get('https://ani.gamer.com.tw/animePayed.php', follow_redirects=False)
+    async def subscription_due_date(self) -> datetime | None:
+        response = await self.client.get('https://ani.gamer.com.tw/animePayed.php', follow_redirects=False)
         pattern = re.compile(r"最終服務到期日為 <b>(.+?)</b>")
         result = pattern.search(response.text)
         result = result.group(1) if result else None # 比如2024-10-15 22:51
         return datetime.strptime(result, "%Y-%m-%d %H:%M") if result else None
     
-    def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
+    async def parse_playurl(self, playurl: str) -> Tuple[Season, List[Episode]]:
         if playurl.startswith(self.Config.base_play_url[0]):
             # https://ani.gamer.com.tw/animeRef.php?sn=112458
-            response = self.client.get(playurl, follow_redirects=False)
+            response = await self.client.get(playurl, follow_redirects=False)
             if response.status_code == 301 or response.status_code == 302:
                 playurl = response.headers.get('Location')
             else:
                 raise SeasonNotExistsError(playurl)
         sn = re.search(r"sn=(\d+)", playurl).group(1)
         url = BahaAPI.season_episode_info.format(sn=sn)
-        response = self.client.get(url)
+        response = await self.client.get(url)
         data = response.json()
         anime = data['data']['anime']
         season_id = anime['animeSn']
@@ -97,14 +94,15 @@ class BahaAdapter(BaseAdapterInterface):
             )
         return season, episodes
 
-    def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
+    async def parse_stream(self, episode: Episode) -> Tuple[List[VideoMedia], Optional[List[AudioMedia]], Optional[List[SubtitleMedia]]]:
         """解析剧集流，返回视频、音频、字幕流"""
+        self.device_id = (await self.client.get('https://ani.gamer.com.tw/ajax/getdeviceid.php')).json()['deviceid']
         url = BahaAPI.master_m3u8.format(sn=episode.episode_id, device_id=self.device_id)
-        response = self.client.get(url)
+        response = await self.client.get(url)
         data = response.json()
         m3u8_url = data['src']
         base_url = m3u8_url.split('playlist_advance.m3u8')[0]
-        response = self.client.get(m3u8_url)
+        response = await self.client.get(m3u8_url)
         master_m3u8 = response.text
         master_playlist = m3u8.loads(master_m3u8, uri=base_url)
         video_medias = []
@@ -114,6 +112,7 @@ class BahaAdapter(BaseAdapterInterface):
                     episode_id=episode.episode_id,
                     url=base_url + playlist.uri,
                     url_type=UrlType.HTTPS,
+                    file_type=FileType.M3U8,
                     headers={'Origin': 'https://ani.gamer.com.tw'},
                     biterate=playlist.stream_info.bandwidth,
                     drm_type=DRMType.HLS,
