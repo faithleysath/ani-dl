@@ -187,8 +187,9 @@ class DRMType(str, Enum):
     DES = "des"
     RSA = "rsa"
     chaCha20 = "chacha20"
+    AES128 = "aes-128"
+    HLS = "hls"
 
-@index_field('episode_id')
 class Media(IndexBaseModel):
     """描述媒体资源信息"""
     episode_id: int
@@ -197,6 +198,7 @@ class Media(IndexBaseModel):
     headers: Optional[Dict[str, str]] = None # 自定义请求头
     size: Optional[int] = None # 文件大小，单位：字节
     length: Optional[int] = None # 媒体时长，单位：毫秒
+    biterate: Optional[int] = None # 比特率，单位：bps
     drm_type: Optional[DRMType] = None
     drm_info: Optional[dict] = None # 可能的值：key, iv, license_url, license_headers, cene
 
@@ -204,12 +206,13 @@ resolution_to_quality = {
     (3840, 2160): "4K",
     (1920, 1080): "1080P",
     (1280, 720): "720P",
+    (960, 540): "540P",
     (854, 480): "480P",
     (640, 360): "360P",
     (426, 240): "240P",
 }
 
-@index_field('quality', 'codec')
+@index_field('episode_id', 'quality', 'codec')
 class VideoMedia(Media):
     """描述视频媒体资源信息"""
     width: int
@@ -217,11 +220,11 @@ class VideoMedia(Media):
     codec: Optional[str] = None
     quality: Optional[str] = None
     def __init__(self, **data):
+        if data.get('quality') is None:
+            data['quality'] = resolution_to_quality.get((data.get('width'), data.get('height')), "未知")
         super().__init__(**data)
-        if not self.quality:
-            self.quality = resolution_to_quality.get((self.width, self.height), "未知")
 
-@index_field('language', 'codec')
+@index_field('episode_id', 'language', 'codec')
 class AudioMedia(Media):
     """描述音频媒体资源信息"""
     codec: Optional[str] = None
@@ -232,7 +235,7 @@ class SubtitleType(str, Enum):
     SRT = "srt"
     ASS = "ass"
 
-@index_field('language', 'subtitle_type')
+@index_field('episode_id', 'language', 'subtitle_type')
 class SubtitleMedia(Media):
     """描述字幕媒体资源信息"""
     subtitle_type: SubtitleType

@@ -1,8 +1,14 @@
-from .Models import Season, Episode, Media, VideoMedia, AudioMedia, SubtitleMedia
+from Models import Season, Episode, VideoMedia, AudioMedia, SubtitleMedia
 from typing import List, Dict, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 from datetime import datetime
 from httpx import Cookies
+
+class SeasonNotExistsError(Exception):
+    """当季不存在时引发的异常"""
+    def __init__(self, url: str):
+        message = f"季不存在：{url}"
+        super().__init__(message)
 
 class BaseAdapterInterface(ABC):
     """基础适配器接口"""
