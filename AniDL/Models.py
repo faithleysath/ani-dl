@@ -177,6 +177,17 @@ class UrlType(str, Enum):
     LOCAL = "local"
     SMB = "smb"
 
+class DRMType(str, Enum):
+    """描述数字版权管理类型"""
+    FAIRPLAY = "fairplay"
+    WIDEVINE = "widevine"
+    PLAYREADY = "playready"
+    # 普通的加密方式
+    AES = "aes"
+    DES = "des"
+    RSA = "rsa"
+    chaCha20 = "chacha20"
+
 @index_field('episode_id')
 class Media(IndexBaseModel):
     """描述媒体资源信息"""
@@ -186,6 +197,8 @@ class Media(IndexBaseModel):
     headers: Optional[Dict[str, str]] = None # 自定义请求头
     size: Optional[int] = None # 文件大小，单位：字节
     length: Optional[int] = None # 媒体时长，单位：毫秒
+    drm_type: Optional[DRMType] = None
+    drm_info: Optional[dict] = None # 可能的值：key, iv, license_url, license_headers, cene
 
 resolution_to_quality = {
     (3840, 2160): "4K",
